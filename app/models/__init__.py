@@ -1,0 +1,9 @@
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+def init_models(app):
+    db.init_app(app)
+    # Importar as classes para o SQLAlchemy mapear
+    from .user import Registro, Perfil
+    from .preferences import Habilidade, Interesse
