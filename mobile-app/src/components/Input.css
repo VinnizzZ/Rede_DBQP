@@ -1,0 +1,66 @@
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.input-label {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text-primary);
+}
+
+.input-field {
+  height: 48px;
+  background-color: var(--color-input-bg);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-pill); /* Pill shaped input in mockup */
+  padding: 0 var(--spacing-lg);
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  width: 100%;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: #9CA3AF; /* Lighter placeholder */
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(59, 123, 246, 0.1);
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 20px; /* Inside the pill padding */
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 20px;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.input-field.has-icon {
+  padding-left: 50px; 
+}
+
+.input-field.has-icon-right {
+  padding-right: 50px;
+}

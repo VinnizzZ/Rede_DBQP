@@ -1,0 +1,70 @@
+.user-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  position: relative;
+  background-color: var(--color-card);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.uc-close {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  color: #D1D5DB;
+  cursor: pointer;
+}
+
+.uc-info {
+  flex: 1;
+}
+
+.uc-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.uc-name {
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.uc-distance {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.uc-skills {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.uc-distance-match {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-success);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 8px;
+}
+
+.uc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.uc-tag-highlight {
+  color: #F59E0B; /* Orange */
+}
