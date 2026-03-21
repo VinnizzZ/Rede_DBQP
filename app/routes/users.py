@@ -34,7 +34,10 @@ def profile():
         avatar_file = request.files.get('avatar')
         if avatar_file and avatar_file.filename != '':
             filename = secure_filename(avatar_file.filename)
-            uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+            
+            # Garante que a imagem seja salva na pasta app/static já existente
+            static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static')
+            uploads_dir = os.path.join(static_dir, 'uploads')
             os.makedirs(uploads_dir, exist_ok=True)
             
             file_path = os.path.join(uploads_dir, filename)

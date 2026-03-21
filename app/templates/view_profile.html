@@ -33,7 +33,7 @@
             <h4 style="color: var(--secondary); margin-bottom: 1rem;"><i class="fas fa-laptop-code"></i> Habilidades</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 {% for h in user.habilidades %}
-                <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.9rem;">
+                <span style="background: rgba(71, 209, 90, 0.2); color: #47D15A; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.9rem;">
                     {{ h.nome }}
                 </span>
                 {% else %}
@@ -46,7 +46,7 @@
             <h4 style="color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-heart"></i> Interesses</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 {% for i in user.interesses %}
-                <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.9rem;">
+                <span style="background: rgba(62, 79, 63, 0.5); color: #86efac; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.9rem;">
                     {{ i.nome }}
                 </span>
                 {% else %}
