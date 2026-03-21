@@ -15,7 +15,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">
+            <a href="{{ url_for('posts.index') if session.get('user_id') else '/' }}" class="logo">
                 <span class="logo-text">Dev<span class="highlight">Net</span></span>
             </a>
 
