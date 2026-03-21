@@ -16,13 +16,15 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="{{ url_for('posts.index') if session.get('user_id') else '/' }}" class="logo">
-                <span class="logo-text">Dev<span class="highlight">Net</span></span>
+                <img src="{{ url_for('static', filename='dbqp_static_logo.jpg') }}" alt="DBQP Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                <span class="logo-text">DataBase<span class="highlight"> Qualitativa Pessoal</span></span>
             </a>
 
             <div class="nav-links">
                 {% if session.get('user_id') %}
                 <a href="{{ url_for('posts.index') }}" class="nav-item">Feed</a>
                 <a href="{{ url_for('users.network') }}" class="nav-item">Network</a>
+                <a href="{{ url_for('communities.list_communities') }}" class="nav-item">Comunidades</a>
                 <a href="{{ url_for('users.profile') }}" class="nav-item">Perfil</a>
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Sair</a>
                 {% else %}

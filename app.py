@@ -9,6 +9,7 @@ from app.models import db, init_models
 from app.routes.auth import auth_bp
 from app.routes.posts import posts_bp
 from app.routes.users import users_bp
+from app.routes.communities import communities_bp
 
 app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
 app.secret_key = os.getenv('SECRET_KEY', 'dev_secret_key_123')
@@ -43,6 +44,7 @@ with app.app_context():
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(posts_bp, url_prefix='/posts')
 app.register_blueprint(users_bp, url_prefix='/users')
+app.register_blueprint(communities_bp, url_prefix='/communities')
 
 @app.route('/')
 def index():

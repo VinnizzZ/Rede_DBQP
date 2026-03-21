@@ -8,3 +8,4 @@ def init_models(app):
     from .user import Registro, Perfil
     from .preferences import Habilidade, Interesse
     from .post import Post
+    from .comunidade import Comunidade, ComunidadePost
