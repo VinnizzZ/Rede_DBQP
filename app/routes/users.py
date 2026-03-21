@@ -16,9 +16,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@users_bp.route('/profile', methods=['GET', 'POST'])
+@users_bp.route('/profile')
 @login_required
 def profile():
+    user = Registro.query.get(session['user_id'])
+    return render_template('view_profile.html', user=user)
+
+@users_bp.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
     user = Registro.query.get(session['user_id'])
     
     if request.method == 'POST':
