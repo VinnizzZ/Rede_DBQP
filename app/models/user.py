@@ -10,6 +10,7 @@ class Registro(db.Model):
     
     habilidades = db.relationship('Habilidade', secondary=user_habilidades, backref='usuarios')
     interesses = db.relationship('Interesse', secondary=user_interesses, backref='usuarios')
+    perfil = db.relationship('Perfil', backref='user_registro', uselist=False)
 
 class Perfil(db.Model):
     __tablename__ = 'perfil'

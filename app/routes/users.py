@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash
+import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, flash, current_app
+from werkzeug.utils import secure_filename
 from app.models import db
 from app.models.user import Registro, Perfil
 from app.models.preferences import Habilidade, Interesse
@@ -21,7 +23,6 @@ def profile():
     
     if request.method == 'POST':
         biografia = request.form.get('biografia', '')
-        avatar_url = request.form.get('avatar_url', '')
         github_url = request.form.get('github_url', '')
         
         # Atualiza o perfil básico
@@ -30,8 +31,19 @@ def profile():
             perfil = Perfil(user_id=user.id)
             db.session.add(perfil)
             
+        avatar_file = request.files.get('avatar')
+        if avatar_file and avatar_file.filename != '':
+            filename = secure_filename(avatar_file.filename)
+            uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            
+            file_path = os.path.join(uploads_dir, filename)
+            avatar_file.save(file_path)
+            perfil.avatar_url = f"/static/uploads/{filename}"
+        elif not perfil.avatar_url:
+            perfil.avatar_url = "/static/default_avatar.png"
+            
         perfil.biografia = biografia
-        perfil.avatar_url = avatar_url or "/static/default_avatar.png"
         perfil.github_url = github_url
         
         # Atualiza Habilidades (separadas por vírgula)
@@ -63,6 +75,15 @@ def profile():
         return redirect(url_for('users.profile'))
         
     return render_template('profile.html', user=user)
+
+@users_bp.route('/profile/<int:user_id>')
+@login_required
+def view_profile(user_id):
+    if user_id == session['user_id']:
+        return redirect(url_for('users.profile'))
+    
+    user = Registro.query.get_or_404(user_id)
+    return render_template('view_profile.html', user=user)
 
 @users_bp.route('/network')
 @login_required

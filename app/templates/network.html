@@ -120,6 +120,13 @@
                     }
                 };
                 var network = new vis.Network(container, graphData, options);
+
+                network.on("click", function (params) {
+                    if (params.nodes.length > 0) {
+                        var nodeId = params.nodes[0];
+                        window.location.href = '/users/profile/' + nodeId;
+                    }
+                });
             })
             .catch(err => {
                 document.getElementById('loading').innerText = "Erro ao carregar o grafo.";

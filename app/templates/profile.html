@@ -6,18 +6,18 @@
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;"><i class="fas fa-user-edit"></i> Editar Perfil</h2>
     
-    <form method="POST" action="{{ url_for('users.profile') }}">
+    <form method="POST" action="{{ url_for('users.profile') }}" enctype="multipart/form-data">
         
         <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
             <div style="flex: 1;">
                 <div class="form-group">
-                    <label for="avatar_url">URL do Avatar Image (Opcional)</label>
-                    <input type="url" id="avatar_url" name="avatar_url" class="form-control" value="{{ user.perfil.avatar_url if user.perfil else '' }}" placeholder="https://exemplo.com/avatar.png">
+                    <label for="avatar">Enviar Imagem de Perfil (Opcional)</label>
+                    <input type="file" id="avatar" name="avatar" class="form-control" accept="image/png, image/jpeg, image/gif, image/webp">
                 </div>
                 
                 <div class="form-group">
                     <label for="github_url">URL do seu GitHub</label>
-                    <input type="url" id="github_url" name="github_url" class="form-control" value="{{ user.perfil.github_url if user.perfil else '' }}" placeholder="https://github.com/seunome">
+                    <input type="text" id="github_url" name="github_url" class="form-control" value="{{ user.perfil.github_url if user.perfil else '' }}" placeholder="https://github.com/seunome">
                 </div>
             </div>
             
@@ -58,14 +58,16 @@
 </div>
 
 <script>
-    const avatarInput = document.getElementById('avatar_url');
+    const avatarInput = document.getElementById('avatar');
     const avatarPreview = document.getElementById('avatar-preview');
     
-    avatarInput.addEventListener('input', function() {
-        if(this.value.trim() !== '') {
-            avatarPreview.src = this.value;
-        } else {
-            avatarPreview.src = "/static/default_avatar.png";
+    avatarInput.addEventListener('change', function(event) {
+        if (event.target.files && event.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
         }
     });
     
