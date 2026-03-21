@@ -7,3 +7,4 @@ def init_models(app):
     # Importar as classes para o SQLAlchemy mapear
     from .user import Registro, Perfil
     from .preferences import Habilidade, Interesse
+    from .post import Post

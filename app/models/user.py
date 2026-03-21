@@ -16,3 +16,5 @@ class Perfil(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('registro.id'), unique=True)
     biografia = db.Column(db.Text)
+    avatar_url = db.Column(db.String(255), default="/static/default_avatar.png")
+    github_url = db.Column(db.String(255))

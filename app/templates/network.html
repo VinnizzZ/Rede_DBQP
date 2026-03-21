@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Sua Network - DevNet{% endblock %}
+
+{% block head %}
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style type="text/css">
+    #network-canvas {
+        width: 100%;
+        height: 600px;
+        border: 1px solid var(--border-color);
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 12px;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+    /* Loading text style */
+    #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h2><i class="fas fa-project-diagram" style="color: var(--secondary);"></i> Grafo de Conexões</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Visualize como você está conectado aos outros desenvolvedores. As linhas indicam tecnologias ou interesses em comum.
+    </p>
+
+    <div style="position: relative;">
+        <div id="loading">Carregando nós da rede...</div>
+        <div id="network-canvas"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/users/api/network_data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                // create an array with nodes
+                var nodes = new vis.DataSet(data.nodes.map(n => {
+                    return {
+                        id: n.id,
+                        label: n.label,
+                        title: n.title, // hover info
+                        group: n.group,
+                        shape: n.shape,
+                        image: n.image,
+                        font: { color: '#f8fafc', size: 14 }
+                    };
+                }));
+
+                // create an array with edges
+                var edges = new vis.DataSet(data.edges.map(e => {
+                    return {
+                        from: e.from,
+                        to: e.to,
+                        value: e.value, // thickness
+                        title: e.title, // hover info
+                        color: { color: 'rgba(96, 165, 250, 0.4)', highlight: '#3b82f6', hover: '#60a5fa' }
+                    };
+                }));
+
+                // create a network
+                var container = document.getElementById('network-canvas');
+                var graphData = {
+                    nodes: nodes,
+                    edges: edges
+                };
+                var options = {
+                    nodes: {
+                        size: 30,
+                        borderWidth: 2,
+                        color: {
+                            background: '#1e293b',
+                            border: '#8b5cf6',
+                            highlight: {
+                                background: '#3b82f6',
+                                border: '#fff'
+                            }
+                        }
+                    },
+                    edges: {
+                        smooth: {
+                            type: 'continuous'
+                        }
+                    },
+                    groups: {
+                        1: { // Current User (me)
+                            color: { border: '#10b981', background: '#059669' },
+                            borderWidth: 3
+                        },
+                        2: { // Others
+                            color: { border: '#3b82f6', background: '#1e293b' }
+                        }
+                    },
+                    physics: {
+                        barnesHut: {
+                            gravitationalConstant: -2000,
+                            centralGravity: 0.3,
+                            springLength: 200,
+                            springConstant: 0.04,
+                            damping: 0.09
+                        },
+                        stabilization: {
+                            iterations: 150
+                        }
+                    },
+                    interaction: {
+                        hover: true,
+                        tooltipDelay: 100
+                    }
+                };
+                var network = new vis.Network(container, graphData, options);
+            })
+            .catch(err => {
+                document.getElementById('loading').innerText = "Erro ao carregar o grafo.";
+                console.error(err);
+            });
+    });
+</script>
+{% endblock %}

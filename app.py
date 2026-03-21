@@ -10,7 +10,8 @@ from app.routes.auth import auth_bp
 from app.routes.posts import posts_bp
 from app.routes.users import users_bp
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
+app.secret_key = os.getenv('SECRET_KEY', 'dev_secret_key_123')
 load_dotenv()
 
 # Configuracoes banco de dados
@@ -20,7 +21,16 @@ password = os.getenv('password')
 port = os.getenv('port')
 banco = os.getenv('banco')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{user}:{password}@{host}/{banco}"
+banco_uri = os.getenv('DATABASE_URI')
+if banco_uri:
+    app.config['SQLALCHEMY_DATABASE_URI'] = banco_uri
+elif host and user and banco:
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{user}:{password}@{host}/{banco}"
+else:
+    # Fallback to sqlite for local dev testing
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializa o banco com a estrutura modular
