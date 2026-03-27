@@ -9,3 +9,4 @@ def init_models(app):
     from .preferences import Habilidade, Interesse
     from .post import Post
     from .comunidade import Comunidade, ComunidadePost
+    from .associations import Amizade

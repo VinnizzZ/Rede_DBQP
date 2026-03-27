@@ -1,115 +1,86 @@
 # Rede DBQP — DataBase Qualitativa Pessoal
 
-## Visão Geral
+## 🌐 Visão Geral
+A **Rede DBQP** é uma plataforma social avançada para desenvolvedores que transcende o modelo tradicional de conexões. Ela utiliza **Teoria dos Grafos** de alto nível para mapear afinidades técnicas, sugerir trilhas de aprendizado e visualizar a dinâmica de influência em tempo real. Cada interação — seguidor, amigo ou stack compartilhada — alimenta um ecossistema de dados processados por algoritmos clássicos e modernos.
 
-A **Rede DBQP** é uma rede social voltada para programadores e profissionais de tecnologia. A plataforma conecta usuários com base em suas **habilidades técnicas** e **interesses profissionais**, utilizando **teoria dos grafos** para calcular conexões, recomendar comunidades e visualizar a rede de relacionamentos.
+---
 
-## Stack Tecnológica
+## 🚀 Funcionalidades Principais
 
-| Camada       | Tecnologia                           |
-|--------------|--------------------------------------|
-| Backend      | Python 3 + Flask                     |
-| ORM          | Flask-SQLAlchemy                     |
-| Banco de Dados | SQLite (dev) / MySQL (produção)    |
-| Frontend     | HTML5, CSS3, Jinja2                  |
-| Visualização de Grafos | vis.js (vis-network)      |
-| Autenticação | Werkzeug (hash de senhas) + Session  |
-| Fontes       | Google Fonts (Inter)                 |
-| Ícones       | Font Awesome                         |
+### 1. Inteligência de Rede (Graph-Powered)
+- **Mapa de Conexões**: Visualização interativa usando **vis.js** com motor de física **ForceAtlas2**.
+- **Esqueleto da Rede (MST)**: Destaque visual das conexões de similaridade mais fortes que estruturam a plataforma.
+- **Clusters de Influência (SCC)**: Agrupamento automático de usuários com base em ciclos de seguidores, identificando "bolhas" técnicas e de autoridade.
 
-## Estrutura do Projeto
+### 2. Algoritmos Sociais
+- **Caminho de Afinidade (Dijkstra)**: No perfil de qualquer desenvolvedor, você pode calcular a rota técnica mais curta até ele, baseada em habilidades compartilhadas.
+- **Sugestão BFS**: Sistema de recomendações de amigos de 2º e 3º grau com base em distância geodésica no grafo social.
+- **Trilha de Estudo (Topological Sort)**: Geração de um caminho lógico de aprendizado baseado no **DAG de Tecnologias** (do geral para o específico).
 
-```
+### 3. Ecossistema Social
+- **Comunidades Inteligentes**: Recomendação de comunidades baseada em sobreposição semântica de tags.
+- **Posts e Interação**: Feed global e fóruns internos por comunidade com suporte a formatação markdown.
+- **Sistema Híbrido de Seguidores**: Suporte a grafos dirigidos (seguidores) e não-dirigidos (amizades aceitas).
+
+---
+
+## 🛠️ Stack Tecnológica
+
+| Camada | Tecnologia | Papel |
+| :--- | :--- | :--- |
+| **Backend** | Python 3 + Flask | Core da aplicação e APIs de grafos |
+| **ORM** | SQLAlchemy | Gerenciamento de entidades e associações complexas |
+| **Database** | SQLite | Persistência de dados relacionais e grafos |
+| **Frontend** | Jinja2 + CSS3 (Modern Dark) | Interface premium com estética "Cyber-Professional" |
+| **Graph Engine** | Vis-Network | Renderização dinâmica e simulação de física |
+| **Algoritmos** | BFS, DFS, Dijkstra, Kruskal, Tarjan | Processamento lógico e analítico da rede |
+
+---
+
+## 📂 Arquitetura do Projeto
+
+```text
 Rede_DBQP/
-├── app.py                  # Entry point — configuração Flask e registro de Blueprints
-├── populate_db.py          # Script para criar usuários fictícios com perfis randomizados
-├── seed_communities.py     # Script para criar comunidades pré-definidas
-├── reduce_fakes.py         # Script para limpeza de dados falsos
-├── requirements.txt        # Dependências Python
-├── .env                    # Variáveis de ambiente (DB, secret key)
-│
+├── app.py                  # Servidor principal e configuração do ecossistema
+├── seed_all.py             # Gerador de massa de dados (15+ usuários, posts, grafos)
+├── DOCUMENTACAO_GRAFOS.md  # Detalhamento acadêmico e técnico dos algoritmos
+├── requirements.txt        # Dependências do projeto
 └── app/
-    ├── __init__.py          # Inicializa SQLAlchemy
-    │
-    ├── models/
-    │   ├── user.py          # Registro (usuário) + Perfil
-    │   ├── preferences.py   # Habilidade + Interesse
-    │   ├── comunidade.py    # Comunidade + ComunidadePost
-    │   ├── post.py          # Post (feed geral)
-    │   └── associations.py  # Tabelas de ligação (many-to-many)
-    │
-    ├── routes/
-    │   ├── auth.py          # Login, Registro, Logout
-    │   ├── posts.py         # Feed de posts
-    │   ├── users.py         # Perfil, edição, Network (grafo)
-    │   └── communities.py   # Comunidades, recomendações, posts internos
-    │
-    ├── templates/           # Templates Jinja2 (HTML)
-    └── static/              # CSS, JS, imagens
+    ├── models/             # Definição estrutural (User, Post, Community, Associations)
+    ├── routes/             # Lógica de rotas (Auth, Social, Graph APIs)
+    ├── static/             # Assets, CSS Customizado e Scripts JS
+    └── templates/          # Interfaces HTML modernizadas
 ```
 
-## Módulos Principais
+---
 
-### 1. Autenticação (`auth.py`)
-- Registro de novos usuários com hash de senha (Werkzeug)
-- Login/Logout via sessão Flask
+## ⚡ Como Começar
 
-### 2. Perfil de Usuário (`users.py`)
-- Edição de biografia, avatar e GitHub
-- Cadastro de **habilidades** e **interesses** (separados por vírgula)
-- Visualização de perfis de outros usuários
+1. **Setup do Ambiente**:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # ou .venv\Scripts\activate no Windows
+   pip install -r requirements.txt
+   ```
 
-### 3. Feed de Posts (`posts.py`)
-- Criação e listagem de posts em ordem cronológica inversa
+2. **Alimentação da Base**:
+   ```bash
+   # Popula o sistema com usuários, posts, comunidades e conexões de grafo
+   python seed_all.py
+   ```
 
-### 4. Network — Grafo de Conexões (`users.py`)
-- API REST (`/api/network_data`) que gera um grafo de similaridade entre usuários
-- Visualização interativa com **vis.js** usando layout Barnes-Hut
-- Arestas representam habilidades/interesses compartilhados, com espessura proporcional
+3. **Execução**:
+   ```bash
+   python app.py
+   ```
+   Acesse: `http://127.0.0.1:5000`
 
-### 5. Comunidades (`communities.py`)
-- Criação de comunidades (fóruns) com tags de habilidades/interesses
-- Sistema de recomendação baseado em sobreposição de tags
-- Divisão em **Recomendadas** (matching com perfil) e **Todas as Comunidades**
-- Posts internos por membros
+---
 
-## Banco de Dados — Modelo Relacional
+## 📈 Próximos Passos
+- Implementação de algoritmos de **Centralidade (PageRank)** para identificar especialistas.
+- Chat em tempo real entre amigos.
+- Integração profunda com APIs do GitHub para auto-preenchimento de habilidades.
 
-```
-Registro (usuário)
-  ├──> Perfil (1:1)
-  ├──> Posts (1:N)
-  ├──> Habilidades (N:N via user_habilidades)
-  ├──> Interesses (N:N via user_interesses)
-  ├──> Comunidades inscritas (N:N via comunidade_membros)
-  └──> Comunidades criadas (1:N)
-
-Comunidade
-  ├──> Habilidades (N:N via comunidade_habilidades)
-  ├──> Interesses (N:N via comunidade_interesses)
-  ├──> Membros (N:N via comunidade_membros)
-  └──> ComunidadePosts (1:N)
-```
-
-## Como Executar
-
-```bash
-# 1. Criar e ativar ambiente virtual
-python -m venv .venv
-.venv\Scripts\activate       # Windows
-
-# 2. Instalar dependências
-pip install -r requirements.txt
-
-# 3. Configurar variáveis de ambiente (.env)
-# Copiar de env-example.md
-
-# 4. Popular banco (opcional)
-python populate_db.py
-python seed_communities.py
-
-# 5. Executar
-python app.py
-```
-
-O servidor estará em `http://127.0.0.1:5000`.
+---
+© 2026 DBQP Project - Documentação Técnica do Sistema

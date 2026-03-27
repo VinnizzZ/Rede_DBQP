@@ -29,3 +29,29 @@ comunidade_interesses = db.Table('comunidade_interesses',
     db.Column('comunidade_id', db.Integer, db.ForeignKey('comunidade.id'), primary_key=True),
     db.Column('interesse_id', db.Integer, db.ForeignKey('lista_interesses.id'), primary_key=True)
 )
+
+# ================================================================
+# GRAFO NÃO-DIRIGIDO: Amizades (com status para pedidos pendentes)
+# ================================================================
+class Amizade(db.Model):
+    __tablename__ = 'amizades'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('registro.id'), nullable=False)
+    amigo_id = db.Column(db.Integer, db.ForeignKey('registro.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending')  # 'pending' ou 'accepted'
+    
+    # Relacionamentos para acesso fácil
+    remetente = db.relationship('Registro', foreign_keys=[user_id], backref='pedidos_enviados')
+    destinatario = db.relationship('Registro', foreign_keys=[amigo_id], backref='pedidos_recebidos')
+    
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'amigo_id', name='uq_amizade'),
+    )
+
+# ================================================================
+# GRAFO DIRIGIDO: Seguidores (um segue o outro, unilateral)
+# ================================================================
+seguidores = db.Table('seguidores',
+    db.Column('seguidor_id', db.Integer, db.ForeignKey('registro.id'), primary_key=True),
+    db.Column('seguido_id', db.Integer, db.ForeignKey('registro.id'), primary_key=True)
+)

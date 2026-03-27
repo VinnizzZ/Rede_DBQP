@@ -12,7 +12,94 @@
         <h2>{{ user.nome }}</h2>
         <p style="color: var(--text-muted); font-size: 1.1rem;"><i class="fas fa-envelope"></i> {{ user.email }}</p>
 
-        {% if session.get('user_id') == user.id %}
+        <!-- Contadores Sociais -->
+        <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; margin-bottom: 1rem;">
+            <div style="text-align: center;">
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ amigos|length if amigos else 0 }}</span>
+                <br><span style="font-size: 0.85rem; color: var(--text-muted);">Amigos</span>
+            </div>
+            <div style="text-align: center;">
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{ num_seguidores if num_seguidores is defined else 0 }}</span>
+                <br><span style="font-size: 0.85rem; color: var(--text-muted);">Seguidores</span>
+            </div>
+            <div style="text-align: center;">
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{ num_seguindo if num_seguindo is defined else 0 }}</span>
+                <br><span style="font-size: 0.85rem; color: var(--text-muted);">Seguindo</span>
+            </div>
+        </div>
+
+        <!-- Distância no Grafo (só para perfil de outros) -->
+        {% if not is_own_profile and distancia is defined %}
+        <div style="margin-bottom: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+            <div>
+                {% if distancia == -1 %}
+                    <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem;">
+                        <i class="fas fa-unlink"></i> Sem conexão no grafo de amizades
+                    </span>
+                {% elif distancia == 1 %}
+                    <span style="background: rgba(71, 209, 90, 0.2); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem;">
+                        <i class="fas fa-link"></i> Amigo direto (distância 1)
+                    </span>
+                {% else %}
+                    <span style="background: rgba(71, 209, 90, 0.1); color: #86efac; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.85rem;">
+                        <i class="fas fa-project-diagram"></i> A {{ distancia }} conexões de você
+                    </span>
+                {% endif %}
+            </div>
+            
+            <button onclick="verCaminhoAfinidade({{ user.id }})" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.2rem 0.6rem; border-color: var(--secondary); color: var(--secondary);">
+                <i class="fas fa-route"></i> Ver Melhor Caminho de Afinidade (Dijkstra)
+            </button>
+            <div id="affinity-path-result" style="display: none; margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px dashed var(--secondary);">
+                <i class="fas fa-spinner fa-spin"></i> Calculando rota...
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Botões de Ação (perfil de outros) -->
+        {% if not is_own_profile %}
+        <div style="display: flex; justify-content: center; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap;">
+            <!-- Botão de Amizade -->
+            {% if status_amizade == 'none' %}
+                <form method="POST" action="{{ url_for('users.friend_request', user_id=user.id) }}">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Adicionar Amigo</button>
+                </form>
+            {% elif status_amizade == 'pending_sent' %}
+                <button class="btn btn-outline" disabled style="opacity: 0.6; cursor: default;">
+                    <i class="fas fa-clock"></i> Pedido Enviado
+                </button>
+            {% elif status_amizade == 'pending_received' %}
+                <form method="POST" action="{{ url_for('users.friend_accept', user_id=user.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Aceitar</button>
+                </form>
+                <form method="POST" action="{{ url_for('users.friend_reject', user_id=user.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-outline" style="border-color: #f87171; color: #f87171;"><i class="fas fa-times"></i> Recusar</button>
+                </form>
+            {% elif status_amizade == 'accepted' %}
+                <form method="POST" action="{{ url_for('users.friend_remove', user_id=user.id) }}">
+                    <button type="submit" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+                        <i class="fas fa-user-check"></i> Amigos ✓
+                    </button>
+                </form>
+            {% endif %}
+
+            <!-- Botão de Seguir -->
+            {% if esta_seguindo %}
+                <form method="POST" action="{{ url_for('users.unfollow', user_id=user.id) }}">
+                    <button type="submit" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+                        <i class="fas fa-eye"></i> Seguindo ✓
+                    </button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ url_for('users.follow', user_id=user.id) }}">
+                    <button type="submit" class="btn btn-outline"><i class="fas fa-eye"></i> Seguir</button>
+                </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Botões do próprio perfil -->
+        {% if is_own_profile %}
         <p style="margin-top: 1rem;">
             <a href="{{ url_for('users.edit_profile') }}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Editar Perfil
@@ -72,9 +159,79 @@
         </div>
     </div>
 
+    <!-- Pedidos de Amizade Pendentes (próprio perfil) -->
+    {% if is_own_profile and pedidos_pendentes and pedidos_pendentes|length > 0 %}
+    <div style="margin-top: 2rem; text-align: left; background: #101411; padding: 1.5rem; border-radius: 12px;">
+        <h4 style="color: #fbbf24; margin-bottom: 1rem;"><i class="fas fa-bell"></i> Pedidos de Amizade ({{ pedidos_pendentes|length }})</h4>
+        {% for pedido in pedidos_pendentes %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid var(--border-color);">
+            <a href="{{ url_for('users.view_profile', user_id=pedido.remetente.id) }}" style="color: var(--text-main); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                <img src="{{ pedido.remetente.perfil.avatar_url if pedido.remetente.perfil and pedido.remetente.perfil.avatar_url else url_for('static', filename='default_avatar.png') }}"
+                     style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                {{ pedido.remetente.nome }}
+            </a>
+            <div style="display: flex; gap: 0.5rem;">
+                <form method="POST" action="{{ url_for('users.friend_accept', user_id=pedido.remetente.id) }}">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;"><i class="fas fa-check"></i> Aceitar</button>
+                </form>
+                <form method="POST" action="{{ url_for('users.friend_reject', user_id=pedido.remetente.id) }}">
+                    <button type="submit" class="btn btn-outline" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; border-color: #f87171; color: #f87171;"><i class="fas fa-times"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Lista de Amigos -->
+    {% if amigos and amigos|length > 0 %}
+    <div style="margin-top: 2rem; text-align: left; background: #101411; padding: 1.5rem; border-radius: 12px;">
+        <h4 style="color: var(--primary); margin-bottom: 1rem;"><i class="fas fa-user-friends"></i> Amigos ({{ amigos|length }})</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+            {% for amigo in amigos %}
+            <a href="{{ url_for('users.view_profile', user_id=amigo.id) }}" style="text-decoration: none; text-align: center; color: var(--text-main);">
+                <img src="{{ amigo.perfil.avatar_url if amigo.perfil and amigo.perfil.avatar_url else url_for('static', filename='default_avatar.png') }}"
+                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); display: block; margin: 0 auto 0.3rem;">
+                <span style="font-size: 0.8rem;">{{ amigo.nome.split(' ')[0] }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <div style="margin-top: 3rem;">
         <a href="{{ url_for('users.network') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Voltar ao
             Grafo</a>
     </div>
 </div>
+
+<script>
+function verCaminhoAfinidade(targetId) {
+    const resDiv = document.getElementById('affinity-path-result');
+    resDiv.style.display = 'block';
+    resDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando rota de afinidade...';
+    
+    fetch(`/users/api/affinity_path/${targetId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Nenhuma rota de afinidade encontrada.';
+            } else {
+                let pathHtml = '<strong>Melhor conexão técnica:</strong><br><div style="margin-top:0.5rem; display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem; justify-content:center;">';
+                data.path.forEach((u, i) => {
+                    pathHtml += `<span style="color:var(--secondary)">${u.nome}</span>`;
+                    if (i < data.path.length - 1) {
+                        pathHtml += ' <i class="fas fa-chevron-right" style="font-size:0.7rem; opacity:0.5;"></i> ';
+                    }
+                });
+                pathHtml += '</div>';
+                resDiv.innerHTML = pathHtml;
+            }
+        })
+        .catch(err => {
+            resDiv.innerHTML = '<i class="fas fa-times"></i> Erro ao calcular rota.';
+            console.error(err);
+        });
+}
+</script>
 {% endblock %}

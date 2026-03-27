@@ -23,115 +23,277 @@
         font-size: 1.2rem;
         color: var(--primary);
     }
+
+    .suggestion-card {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.8rem;
+        border-radius: 10px;
+        background: #101411;
+        margin-bottom: 0.6rem;
+        transition: background 0.2s;
+    }
+    .suggestion-card:hover {
+        background: rgba(71, 209, 90, 0.05);
+    }
+    .suggestion-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--secondary);
+        flex-shrink: 0;
+    }
+    .suggestion-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .suggestion-name {
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .suggestion-name:hover {
+        color: var(--primary);
+    }
+    .suggestion-dist {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .suggestion-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-top: 0.3rem;
+    }
+    .suggestion-tag {
+        font-size: 0.65rem;
+        background: rgba(71, 209, 90, 0.15);
+        color: var(--primary);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 2rem;">
-    <h2><i class="fas fa-project-diagram" style="color: var(--secondary);"></i> Grafo de Conexões</h2>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
-        Visualize como você está conectado aos outros desenvolvedores. As linhas indicam tecnologias ou interesses em
-        comum.
-    </p>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Grafo Principal -->
+    <div>
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2><i class="fas fa-project-diagram" style="color: var(--secondary);"></i> Grafo de Conexões</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                Visualize como você está conectado aos outros desenvolvedores. As linhas indicam tecnologias ou interesses em
+                comum.
+            </p>
 
-    <div style="position: relative;">
-        <div id="loading">Carregando nós da rede...</div>
-        <div id="network-canvas"></div>
+            <div style="position: relative;">
+                <div id="loading">Carregando nós da rede...</div>
+                <div id="network-canvas"></div>
+            </div>
+
+            <!-- Legenda de Conceitos de Grafos -->
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-color);">
+                <h4 style="margin-bottom: 0.8rem; font-size: 0.9rem; color: var(--secondary);">Conceitos de Grafos Aplicados:</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+                    <div>
+                        <p><strong style="color: #47D15A;">● Árvore Geradora (MST):</strong> Arestas em verde representam o "esqueleto" de maior afinidade da rede.</p>
+                        <p><strong style="color: var(--primary);">● Componentes Fortemente Conexas (SCC):</strong> Cores dos nós indicam grupos que se seguem mutuamente em ciclos.</p>
+                    </div>
+                    <div>
+                        <p><strong>● Grafos Ponderados:</strong> A espessura da linha indica a quantidade de stacks em comum.</p>
+                        <p><strong>● BFS (3-hops):</strong> O sistema de sugestões ao lado busca amigos em até 3 níveis de profundidade.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Sugestões de Amigos -->
+    <div>
+        <div class="card" style="margin-bottom: 1rem;">
+            <h3 style="margin-bottom: 0.3rem;"><i class="fas fa-user-plus" style="color: var(--primary);"></i> Sugestões de Amigos</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Pessoas a até 3 conexões de você no grafo de amizades (BFS)</p>
+            
+            <div id="suggestions-container">
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center;">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando sugestões...
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 0.3rem;"><i class="fas fa-graduation-cap" style="color: var(--secondary);"></i> Trilha de Aprendizado</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Sugestão de skills baseada em popularidade (DAG + Ordenação Topológica)</p>
+            <div id="learning-path-container">
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Gerando trilha...</p>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function () {
+
+        // ============= GRAFO =============
         fetch('/users/api/network_data')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('loading').style.display = 'none';
 
-                // create an array with nodes
                 var nodes = new vis.DataSet(data.nodes.map(n => {
-                    return {
+                    let nodeObj = {
                         id: n.id,
                         label: n.label,
-                        title: n.title, // hover info
+                        title: n.title,
                         group: n.group,
                         shape: n.shape,
-                        image: n.image,
                         font: { color: '#f8fafc', size: 14 }
                     };
+                    if (n.image) nodeObj.image = n.image;
+                    return nodeObj;
                 }));
 
-                // create an array with edges
                 var edges = new vis.DataSet(data.edges.map(e => {
                     return {
                         from: e.from,
                         to: e.to,
-                        value: e.value, // thickness
-                        title: e.title, // hover info
-                        color: { color: 'rgba(71, 209, 90, 0.4)', highlight: '#47D15A', hover: '#86efac' }
+                        value: e.value,
+                        title: `Stacks em comum: ${e.value}`,
+                        color: e.color || { color: 'rgba(255, 255, 255, 0.1)' },
+                        width: e.width || 1,
+                        arrows: { to: { enabled: false } } // Grafo de similaridade não é dirigido
                     };
                 }));
 
-                // create a network
                 var container = document.getElementById('network-canvas');
-                var graphData = {
-                    nodes: nodes,
-                    edges: edges
-                };
+                var graphData = { nodes: nodes, edges: edges };
                 var options = {
                     nodes: {
-                        size: 30,
+                        size: 32,
                         borderWidth: 2,
-                        color: {
+                        borderWidthSelected: 4,
+                        color: { 
+                            border: '#3E4F3F', 
                             background: '#121a14',
-                            border: '#3E4F3F',
-                            highlight: {
-                                background: '#47D15A',
-                                border: '#fff'
-                            }
-                        }
-                    },
-                    edges: {
-                        smooth: {
-                            type: 'continuous'
-                        }
-                    },
-                    groups: {
-                        1: { // Current User (me)
-                            color: { border: '#47D15A', background: '#36b347' },
-                            borderWidth: 3
+                            highlight: { border: '#47D15A', background: '#121a14' }
                         },
-                        2: { // Others
-                            color: { border: '#3E4F3F', background: '#121a14' }
-                        }
+                        font: { face: 'Inter, sans-serif' }
+                    },
+                    edges: { 
+                        smooth: { type: 'continuous', roundness: 0.5 },
+                        font: { align: 'top' }
                     },
                     physics: {
-                        barnesHut: {
-                            gravitationalConstant: -4000,
-                            centralGravity: 0.1,
-                            springLength: 250,
-                            springConstant: 0.01,
-                            damping: 0.09
+                        solver: 'forceAtlas2Based',
+                        forceAtlas2Based: {
+                            gravitationalConstant: -100,
+                            centralGravity: 0.01,
+                            springLength: 200,
+                            springConstant: 0.08,
+                            damping: 0.4,
+                            avoidOverlap: 1
                         },
-                        stabilization: {
-                            iterations: 150
-                        }
+                        stabilization: { iterations: 150, updateInterval: 25 }
                     },
-                    interaction: {
-                        hover: true,
-                        tooltipDelay: 100
+                    interaction: { 
+                        hover: true, 
+                        tooltipDelay: 200,
+                        navigationButtons: true
                     }
                 };
                 var network = new vis.Network(container, graphData, options);
 
                 network.on("click", function (params) {
                     if (params.nodes.length > 0) {
-                        var nodeId = params.nodes[0];
-                        window.location.href = '/users/profile/' + nodeId;
+                        window.location.href = '/users/profile/' + params.nodes[0];
                     }
                 });
+            });
+
+        // ============= TRILHA DE APRENDIZADO (DAG) =============
+        fetch('/users/api/learning_path')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('learning-path-container');
+                if (!data.learning_path || data.learning_path.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Você já domina as principais stacks!</p>';
+                    return;
+                }
+                let html = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+                data.learning_path.forEach((skill, index) => {
+                    html += `
+                        <div style="display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.03); padding: 0.6rem; border-radius: 8px;">
+                            <span style="width: 24px; height: 24px; background: var(--secondary); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem;">${index + 1}</span>
+                            <span style="color: var(--text-main); font-size: 0.9rem;">${skill}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
             })
             .catch(err => {
-                document.getElementById('loading').innerText = "Erro ao carregar o grafo.";
+                const container = document.getElementById('learning-path-container');
+                container.innerHTML = '<p style="color: #f87171; font-size: 0.8rem;">Erro ao carregar trilha.</p>';
+                console.error(err);
+            });
+
+        // ============= SUGESTÕES DE AMIGOS (BFS) =============
+        fetch('/users/api/friend_suggestions')
+            .then(response => response.json())
+            .then(data => {
+                var container = document.getElementById('suggestions-container');
+                
+                if (data.suggestions.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 1rem 0;">
+                            <i class="fas fa-ghost" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                            <p style="font-size: 0.9rem;">Nenhuma sugestão no momento. Faça amizades para expandir sua rede!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                var html = '';
+                data.suggestions.forEach(function(s) {
+                    var tags = '';
+                    s.habilidades.forEach(function(h) {
+                        tags += '<span class="suggestion-tag">' + h + '</span>';
+                    });
+                    s.interesses.forEach(function(i) {
+                        tags += '<span class="suggestion-tag">' + i + '</span>';
+                    });
+                    
+                    var distLabel = s.distancia === 2 ? '2° grau' : s.distancia + '° grau';
+                    
+                    html += `
+                        <div class="suggestion-card">
+                            <img src="${s.avatar_url}" class="suggestion-avatar" alt="${s.nome}">
+                            <div class="suggestion-info">
+                                <a href="/users/profile/${s.id}" class="suggestion-name">${s.nome}</a>
+                                <span class="suggestion-dist"><i class="fas fa-project-diagram"></i> ${distLabel} de conexão</span>
+                                <div class="suggestion-tags">${tags}</div>
+                            </div>
+                            <form method="POST" action="/users/friend/request/${s.id}" style="flex-shrink: 0;">
+                                <button type="submit" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                var container = document.getElementById('suggestions-container');
+                container.innerHTML = '<p style="color: #f87171; font-size: 0.9rem;">Erro ao carregar sugestões.</p>';
                 console.error(err);
             });
     });

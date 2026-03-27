@@ -1,5 +1,5 @@
 from . import db
-from .associations import user_habilidades, user_interesses
+from .associations import user_habilidades, user_interesses, seguidores
 
 class Registro(db.Model):
     __tablename__ = 'registro'
@@ -11,6 +11,15 @@ class Registro(db.Model):
     habilidades = db.relationship('Habilidade', secondary=user_habilidades, backref='usuarios')
     interesses = db.relationship('Interesse', secondary=user_interesses, backref='usuarios')
     perfil = db.relationship('Perfil', backref='user_registro', uselist=False)
+    
+    # Grafo dirigido: Seguidores
+    seguindo = db.relationship(
+        'Registro', secondary=seguidores,
+        primaryjoin=(seguidores.c.seguidor_id == id),
+        secondaryjoin=(seguidores.c.seguido_id == id),
+        backref='seguidores_lista',
+        lazy='dynamic'
+    )
 
 class Perfil(db.Model):
     __tablename__ = 'perfil'
