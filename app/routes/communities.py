@@ -43,11 +43,17 @@ def list_communities():
             
     # Ordena pelo score decrescente
     sugeridas.sort(key=lambda x: x[0], reverse=True)
-    comunidades_sugeridas = [s[1] for s in sugeridas]
+    
+    # Separa recomendadas (score > 0) de todas as outras
+    recomendadas = [s[1] for s in sugeridas if s[0] > 0]
+    outras = [s[1] for s in sugeridas if s[0] == 0]
     
     return render_template('communities_list.html', 
                            minhas_comunidades=minhas_comunidades, 
-                           sugeridas=comunidades_sugeridas)
+                           recomendadas=recomendadas,
+                           outras=outras,
+                           meus_interesses=meus_interesses,
+                           minhas_habilidades=minhas_habilidades)
 
 @communities_bp.route('/create', methods=['POST'])
 @login_required
